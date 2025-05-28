@@ -124,7 +124,7 @@ def process_frame(frame, video_start_time, gps_df, fps, frame_count, video_name,
     
     return i + 1
 
-def process_video(video_path, gps_csv_path, output_folder, time_intervals):
+def process_video(video_path, gps_csv_path, output_folder, time_intervals, long_saving_interval, short_saving_interval):
     """
     Process the video by extracting frames based on specified time intervals.
     
@@ -146,6 +146,7 @@ def process_video(video_path, gps_csv_path, output_folder, time_intervals):
     duration_seconds = total_frames / fps
     video_end_time = video_start_time + pd.to_timedelta(duration_seconds, unit='s')
     
+    # ensure the output folder exists
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
     
@@ -166,9 +167,9 @@ def process_video(video_path, gps_csv_path, output_folder, time_intervals):
         # Determine saving interval based on the effective interval's duration.
         effective_duration = (effective_end - effective_start).total_seconds()
         if effective_duration > 300:
-            saving_interval = 20  # seconds
+            saving_interval = long_saving_interval  # seconds
         else:
-            saving_interval = 5   # seconds
+            saving_interval = short_saving_interval   # seconds
         
         # Calculate the step in frames corresponding to the saving interval.
         step = int(fps * saving_interval)
@@ -225,7 +226,7 @@ def video_overlaps_interval(video_path, time_intervals):
     return False, video_start_time, video_end_time
 
 def process_videos_in_folder(root_folder, gps_csv_path, output_folder,
-                             time_intervals):
+                             time_intervals, long_saving_interval, short_saving_interval):
     """
     Recursively search for video files in root_folder (including subfolders),
     check if their time range overlaps any of the time_intervals, and if so, process them.
@@ -244,111 +245,52 @@ def process_videos_in_folder(root_folder, gps_csv_path, output_folder,
         if overlaps:
             print(f"Processing video: {video_path}")
             print(f"   Video start: {video_start}, Video end: {video_end}")
-            process_video(video_path, gps_csv_path, output_folder, time_intervals)
+            process_video(video_path, gps_csv_path, output_folder, time_intervals, long_saving_interval, short_saving_interval)
         else:
             print(f"Skipping video (no overlapping interval): {video_path}")
 
 
 def main():
-    # # Define your root folder containing subfolders with videos.
-    # root_folder = "/Users/jlimini/GeoNadir/blueboat_framegrab_geotag/videos"
-    
-    # # GPS CSV path, output folder, and other parameters remain as before.
-    # # gps_csv_path = "/Users/jlimini/GeoNadir/blueboat_framegrab_geotag/blueboad_20250129_gps.csv"
-    # gps_csv_path = "/Users/jlimini/GeoNadir/blueboat_framegrab_geotag/rov_20250129_gps.csv"
-    # output_folder = "/Users/jlimini/GeoNadir/blueboat_framegrab_geotag/output"
 
     # Define your root folder containing subfolders with videos.
     root_folder = "/Users/jlimini/GeoNadir/blueboat_framegrab_geotag/20250202/video"
     
     # GPS CSV path, output folder, and other parameters remain as before.
-    # gps_csv_path = "/Users/jlimini/GeoNadir/blueboat_framegrab_geotag/blueboad_20250129_gps.csv"
     gps_csv_path = "/Users/jlimini/GeoNadir/blueboat_framegrab_geotag/20250202/blueboat_dungeness_20250202_1102.csv"
     output_folder = "/Users/jlimini/GeoNadir/blueboat_framegrab_geotag/20250202/blueboat_output"
 
-    # # Define the date to use for all time intervals.
-    # date_str = "20250129"  # January 29, 2025
-
-    # time_intervals = [
-    #     # Interval 1: 10:13-10:20 (assumes seconds are 00)
-    #     (
-    #         datetime.strptime(date_str + "101300", "%Y%m%d%H%M%S"),
-    #         datetime.strptime(date_str + "102000", "%Y%m%d%H%M%S")
-    #     ),
-    #     # Interval 2: 12:25-12:44
-    #     (
-    #         datetime.strptime(date_str + "122500", "%Y%m%d%H%M%S"),
-    #         datetime.strptime(date_str + "124400", "%Y%m%d%H%M%S")
-    #     ),
-    #     # Interval 3: 12:29-12:31
-    #     (
-    #         datetime.strptime(date_str + "122900", "%Y%m%d%H%M%S"),
-    #         datetime.strptime(date_str + "123100", "%Y%m%d%H%M%S")
-    #     ),
-    #     # Interval 4: 12:32-12:37
-    #     (
-    #         datetime.strptime(date_str + "123200", "%Y%m%d%H%M%S"),
-    #         datetime.strptime(date_str + "123700", "%Y%m%d%H%M%S")
-    #     ),
-    #     # Interval 5: 14:21:57-14:21:57 (a single moment)
-    #     (
-    #         datetime.strptime(date_str + "142157", "%Y%m%d%H%M%S"),
-    #         datetime.strptime(date_str + "142157", "%Y%m%d%H%M%S")
-    #     ),
-    #     # Interval 6: 12:56:10-13:13:42
-    #     (
-    #         datetime.strptime(date_str + "125610", "%Y%m%d%H%M%S"),
-    #         datetime.strptime(date_str + "131342", "%Y%m%d%H%M%S")
-    #     ),
-    #     # Interval 7: 13:09:16-13:10:17
-    #     (
-    #         datetime.strptime(date_str + "130916", "%Y%m%d%H%M%S"),
-    #         datetime.strptime(date_str + "131017", "%Y%m%d%H%M%S")
-    #     ),
-    #     # Interval 8: 13:06:54-13:07:30
-    #     (
-    #         datetime.strptime(date_str + "130654", "%Y%m%d%H%M%S"),
-    #         datetime.strptime(date_str + "130730", "%Y%m%d%H%M%S")
-    #     ),
-    #     # Interval 9: 13:05:03-13:05:12
-    #     (
-    #         datetime.strptime(date_str + "130503", "%Y%m%d%H%M%S"),
-    #         datetime.strptime(date_str + "130512", "%Y%m%d%H%M%S")
-    #     )
-    # ]
-    
     # Define the date to use for all time intervals.
-    date_str = "20250202"  # January 29, 2025
+    date_str = "202502"  # Format: YYYYMM
 
+    # Define the time for each day, format: DDHHMMSS.
     time_intervals = [
-        # Interval 1: 10:13-10:20 (assumes seconds are 00)
         (
-            datetime.strptime(date_str + "111434", "%Y%m%d%H%M%S"),
-            datetime.strptime(date_str + "112018", "%Y%m%d%H%M%S")
+            datetime.strptime(date_str + "02111434", "%Y%m%d%H%M%S"),
+            datetime.strptime(date_str + "02112018", "%Y%m%d%H%M%S")
         ),
-        # Interval 2: 12:25-12:44
         (
-            datetime.strptime(date_str + "110410", "%Y%m%d%H%M%S"),
-            datetime.strptime(date_str + "111142", "%Y%m%d%H%M%S")
+            datetime.strptime(date_str + "02110410", "%Y%m%d%H%M%S"),
+            datetime.strptime(date_str + "02111142", "%Y%m%d%H%M%S")
         ),
-        # Interval 3: 12:29-12:31
         (
-            datetime.strptime(date_str + "124452", "%Y%m%d%H%M%S"),
-            datetime.strptime(date_str + "125631", "%Y%m%d%H%M%S")
+            datetime.strptime(date_str + "02124452", "%Y%m%d%H%M%S"),
+            datetime.strptime(date_str + "02125631", "%Y%m%d%H%M%S")
         ),
-        # Interval 4: 12:32-12:37
         (
-            datetime.strptime(date_str + "115239", "%Y%m%d%H%M%S"),
-            datetime.strptime(date_str + "120323", "%Y%m%d%H%M%S")
+            datetime.strptime(date_str + "02115239", "%Y%m%d%H%M%S"),
+            datetime.strptime(date_str + "02120323", "%Y%m%d%H%M%S")
         )
     ]
     # Define the saving interval (e.g., only save one frame every 10 seconds per interval).
-    saving_interval = 10  # seconds
-    
+    # long_saving_interval is used for time intervals longer than 300 seconds,
+    # short_saving_interval is used for shorter intervals.
+
+    long_saving_interval = 30  # seconds
+    short_saving_interval = 5   # seconds
     
     # Process all videos in the folder structure
     process_videos_in_folder(root_folder, gps_csv_path, output_folder,
-                             time_intervals)
+                             time_intervals, long_saving_interval, short_saving_interval)
 
 if __name__ == "__main__":
     main()
