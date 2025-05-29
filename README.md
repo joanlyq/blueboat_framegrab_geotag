@@ -18,7 +18,7 @@ pip install opencv-python tqdm pandas pyexiftool
 ```
 
 
-** Alternatively, and preferrably you can set up a Conda environment to run the script. **
+** Alternatively, and preferrably you can set up a Conda environment to run the script.**
 
 
 ### Installing Miniconda (macOS & Windows)
